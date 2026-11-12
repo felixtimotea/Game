@@ -386,6 +386,24 @@ button {
   height: 100%;
 }
 
+.play-note {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  left: 0;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--raised);
+  color: var(--text);
+  font-size: 0.875rem;
+  text-align: center;
+  pointer-events: none;
+}
+
 .controls {
   display: flex;
   align-items: center;
@@ -431,6 +449,14 @@ button {
   border-right: 10px solid transparent;
   border-bottom: 14px solid var(--text);
   border-left: 10px solid transparent;
+}
+
+.dpad-btn.is-hint {
+  border-color: var(--focus);
+}
+
+.dpad-btn.is-hint::before {
+  border-bottom-color: var(--focus);
 }
 
 .dpad-btn:active,

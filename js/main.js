@@ -11,11 +11,13 @@
   const LEVELS = window.CRATE_LEVELS || [];
   const Game = window.CrateGame;
   const Render = window.CrateRender;
+  const Solver = window.CrateSolver;
   const STORAGE_KEY = 'crate-shift-progress-v1';
   const SWIPE_DISTANCE = 24;
   const HOLD_DELAY = 320;
   const HOLD_REPEAT = 110;
   const COMPLETE_DELAY = 380;
+  const HINT_MAX_STATES = 300000;
 
   const ICONS = {
     lock: '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M4 7V5a4 4 0 0 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 0 0-4 0v2z"/></svg>',
@@ -39,6 +41,8 @@
   let solved = false;
   let solveToken = 0;
   let frameId = 0;
+  // Steps still to play from the last solve, while the player keeps following them.
+  let hintPlan = '';
 
   // ---------- Saved progress ----------
 
@@ -192,6 +196,8 @@
     game = Game.createGame(LEVELS[index].rows);
     solved = false;
     solveToken++;
+    hintPlan = '';
+    clearHint();
 
     $('hud-level').textContent = `Level ${index + 1}`;
     $('hud-name').textContent = LEVELS[index].name || '';
@@ -205,6 +211,7 @@
     $('hud-moves').textContent = String(game.moves);
     $('hud-pushes').textContent = String(game.pushes);
     $('btn-undo').disabled = game.history.length === 0 || solved;
+    $('btn-hint').disabled = solved;
   }
 
   function canPlay() {
@@ -214,13 +221,57 @@
   function move(dir) {
     if (!canPlay()) return;
     if (!Game.tryMove(game, dir).moved) return;
+    // Following the hint keeps the rest of the plan; any other step throws it away.
+    hintPlan = hintPlan && Solver.letterToDir(hintPlan[0]) === dir ? hintPlan.slice(1) : '';
+    clearHint();
     if (Game.isSolved(game)) levelSolved();
     updateHud();
   }
 
   function undo() {
     if (!canPlay()) return;
-    if (Game.undo(game)) updateHud();
+    if (!Game.undo(game)) return;
+    hintPlan = '';
+    clearHint();
+    updateHud();
+  }
+
+  // ---------- Hints ----------
+
+  function clearHint() {
+    renderer.setHint(null);
+    $('play-note').hidden = true;
+    document.querySelectorAll('.dpad-btn.is-hint').forEach((button) => button.classList.remove('is-hint'));
+  }
+
+  function showNote(text) {
+    $('play-note').textContent = text;
+    $('play-note').hidden = false;
+    $('announcer').textContent = text;
+  }
+
+  /** Points at the next step of a shortest-push solution from the current position. */
+  function hint() {
+    if (!canPlay()) return;
+    clearHint();
+
+    if (!hintPlan) {
+      const result = Solver.solveState(game, HINT_MAX_STATES);
+      if (!result.solvable) {
+        showNote(result.reason === 'limit'
+          ? 'This position is too complex for a hint.'
+          : 'No way to finish from here. Undo or restart.');
+        return;
+      }
+      hintPlan = result.solution;
+    }
+
+    const dir = Solver.letterToDir(hintPlan[0]);
+    const pushes = hintPlan[0] !== hintPlan[0].toLowerCase();
+    renderer.setHint(dir);
+    const button = document.querySelector(`.dpad-btn[data-dir="${dir}"]`);
+    if (button) button.classList.add('is-hint');
+    $('announcer').textContent = `Hint: ${pushes ? 'push' : 'move'} ${dir}.`;
   }
 
   function restart() {
@@ -278,6 +329,7 @@
   $('btn-levels').addEventListener('click', showLevels);
   $('btn-levels-back').addEventListener('click', () => showTitle(true));
   $('btn-undo').addEventListener('click', undo);
+  $('btn-hint').addEventListener('click', hint);
   $('btn-restart').addEventListener('click', restart);
   $('btn-exit').addEventListener('click', showLevels);
   $('btn-next').addEventListener('click', () => startLevel(levelIndex + 1));
@@ -323,6 +375,8 @@
     } else if (key === 'z' || key === 'u' || key === 'Backspace') {
       event.preventDefault();
       undo();
+    } else if (key === 'h') {
+      hint();
     } else if (key === 'r') {
       restart();
     } else if (key === 'Escape') {

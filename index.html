@@ -50,10 +50,12 @@
 
       <div id="stage" class="stage" tabindex="-1">
         <canvas id="board" role="img" aria-label="Game board"></canvas>
+        <p id="play-note" class="play-note" hidden></p>
       </div>
 
       <footer class="controls">
         <div class="actions">
+          <button id="btn-hint" type="button" class="btn btn-small" title="Show the next move (H)">Hint</button>
           <button id="btn-undo" type="button" class="btn btn-small" title="Undo (Z)">Undo</button>
           <button id="btn-restart" type="button" class="btn btn-small" title="Restart (R)">Restart</button>
           <button id="btn-exit" type="button" class="btn btn-small" title="Level select (Esc)">Levels</button>
@@ -97,6 +99,7 @@
         <table class="keys">
           <tbody>
             <tr><th scope="row">Move</th><td>Arrow keys or W A S D, swipe, or the on-screen pad</td></tr>
+            <tr><th scope="row">Hint</th><td>H shows the next move</td></tr>
             <tr><th scope="row">Undo</th><td>Z</td></tr>
             <tr><th scope="row">Restart</th><td>R</td></tr>
             <tr><th scope="row">Level select</th><td>Esc</td></tr>
@@ -113,6 +116,7 @@
 
   <script src="js/levels.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/solver.js"></script>
   <script src="js/render.js"></script>
   <script src="js/main.js"></script>
 </body>
