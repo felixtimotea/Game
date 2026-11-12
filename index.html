@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Crate Shift</title>
+  <meta name="description" content="A box-pushing puzzle game: push every crate onto a marker.">
+  <meta name="theme-color" content="#0e1420">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='14' fill='%236e420f'/%3E%3Crect x='2' y='2' width='12' height='12' fill='%23d99a3d'/%3E%3Crect x='3' y='6' width='10' height='1' fill='%23a66a1f'/%3E%3Crect x='3' y='9' width='10' height='1' fill='%23a66a1f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+
+    <!-- Title menu -->
+    <section id="screen-title" class="screen screen-title" aria-labelledby="title-heading">
+      <canvas id="logo" class="logo" aria-hidden="true"></canvas>
+      <h1 id="title-heading" class="game-title">Crate Shift</h1>
+      <p class="tagline">Push every crate onto a marker.</p>
+      <nav class="menu" aria-label="Main menu">
+        <button id="btn-play" type="button" class="btn btn-primary">Play</button>
+        <button id="btn-levels" type="button" class="btn">Level Select</button>
+        <button id="btn-help" type="button" class="btn">How to Play</button>
+      </nav>
+    </section>
+
+    <!-- Level select -->
+    <section id="screen-levels" class="screen screen-levels" aria-labelledby="levels-heading" hidden>
+      <header class="bar">
+        <button id="btn-levels-back" type="button" class="btn btn-small">Menu</button>
+        <h2 id="levels-heading">Level Select</h2>
+        <span id="levels-count" class="bar-count"></span>
+      </header>
+      <div id="level-grid" class="level-grid"></div>
+      <p class="hint">Finish a level to unlock the next one.</p>
+    </section>
+
+    <!-- Play -->
+    <section id="screen-play" class="screen screen-play" aria-labelledby="hud-level" hidden>
+      <header class="hud">
+        <div class="hud-title">
+          <h2 id="hud-level">Level 1</h2>
+          <span id="hud-name" class="hud-name"></span>
+        </div>
+        <dl class="hud-stats">
+          <div><dt>Moves</dt><dd id="hud-moves">0</dd></div>
+          <div><dt>Pushes</dt><dd id="hud-pushes">0</dd></div>
+        </dl>
+      </header>
+
+      <div id="stage" class="stage" tabindex="-1">
+        <canvas id="board" role="img" aria-label="Game board"></canvas>
+      </div>
+
+      <footer class="controls">
+        <div class="actions">
+          <button id="btn-undo" type="button" class="btn btn-small" title="Undo (Z)">Undo</button>
+          <button id="btn-restart" type="button" class="btn btn-small" title="Restart (R)">Restart</button>
+          <button id="btn-exit" type="button" class="btn btn-small" title="Level select (Esc)">Levels</button>
+        </div>
+        <div class="dpad" aria-label="Direction pad">
+          <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"></button>
+          <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"></button>
+          <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="Move right"></button>
+          <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"></button>
+        </div>
+      </footer>
+    </section>
+
+    <!-- Level complete -->
+    <div id="overlay-complete" class="overlay" role="dialog" aria-modal="true" aria-labelledby="complete-heading" hidden>
+      <div class="card">
+        <h2 id="complete-heading">Level complete!</h2>
+        <p id="complete-note" class="card-note"></p>
+        <dl class="result">
+          <div><dt>Moves</dt><dd id="complete-moves">0</dd></div>
+          <div><dt>Pushes</dt><dd id="complete-pushes">0</dd></div>
+          <div><dt>Best</dt><dd id="complete-best">0</dd></div>
+        </dl>
+        <div class="card-actions">
+          <button id="btn-next" type="button" class="btn btn-primary">Next Level</button>
+          <button id="btn-complete-levels" type="button" class="btn">Level Select</button>
+          <button id="btn-again" type="button" class="btn">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to play -->
+    <div id="overlay-help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-heading" hidden>
+      <div class="card card-help">
+        <h2 id="help-heading">How to Play</h2>
+        <p>Drive the robot around the warehouse and push every crate onto a glowing marker. A crate turns green when it is in place.</p>
+        <ul class="rules">
+          <li>You can push one crate at a time, and only push: never pull.</li>
+          <li>A crate stuck in a corner stays there, so plan ahead. Undo is free.</li>
+        </ul>
+        <table class="keys">
+          <tbody>
+            <tr><th scope="row">Move</th><td>Arrow keys or W A S D, swipe, or the on-screen pad</td></tr>
+            <tr><th scope="row">Undo</th><td>Z</td></tr>
+            <tr><th scope="row">Restart</th><td>R</td></tr>
+            <tr><th scope="row">Level select</th><td>Esc</td></tr>
+          </tbody>
+        </table>
+        <div class="card-actions">
+          <button id="btn-help-close" type="button" class="btn btn-primary">Got it</button>
+        </div>
+      </div>
+    </div>
+
+    <p id="announcer" class="visually-hidden" aria-live="polite"></p>
+  </main>
+
+  <script src="js/levels.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
