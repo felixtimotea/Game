@@ -4,7 +4,7 @@ A box-pushing puzzle game for the browser. Drive the robot around the warehouse
 and push every crate onto a glowing marker.
 
 - Title menu, level select, and in-order unlocking: finishing a level opens the next.
-- Hints that show the next move, undo, restart, move and push counters, and a saved best score per level.
+- Hints that show the next move, restart, move and push counters, and a saved best score per level.
 - Works with a keyboard, and on phones with swipes or the on-screen pad.
 - No dependencies and no build step. All artwork is drawn in code.
 
@@ -19,7 +19,6 @@ from the branch root).
 |---|---|---|
 | Move | Arrow keys or W A S D | Swipe on the board, or the on-screen pad |
 | Hint | H | Hint button |
-| Undo | Z | Undo button |
 | Restart | R | Restart button |
 | Level select | Esc | Levels button |
 
@@ -72,7 +71,7 @@ new levels automatically.
 | `index.html` | The page: title menu, level select and play screens |
 | `css/style.css` | Styling and responsive layout |
 | `js/levels.js` | The level list |
-| `js/game.js` | Game rules: parsing, moving, pushing, undo, win check |
+| `js/game.js` | Game rules: parsing, moving, pushing, win check |
 | `js/solver.js` | Solver behind hints and the level checker |
 | `js/render.js` | Canvas drawing and slide animation |
 | `js/main.js` | Screens, input and saved progress |

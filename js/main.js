@@ -210,7 +210,6 @@
   function updateHud() {
     $('hud-moves').textContent = String(game.moves);
     $('hud-pushes').textContent = String(game.pushes);
-    $('btn-undo').disabled = game.history.length === 0 || solved;
     $('btn-hint').disabled = solved;
   }
 
@@ -225,14 +224,6 @@
     hintPlan = hintPlan && Solver.letterToDir(hintPlan[0]) === dir ? hintPlan.slice(1) : '';
     clearHint();
     if (Game.isSolved(game)) levelSolved();
-    updateHud();
-  }
-
-  function undo() {
-    if (!canPlay()) return;
-    if (!Game.undo(game)) return;
-    hintPlan = '';
-    clearHint();
     updateHud();
   }
 
@@ -260,7 +251,7 @@
       if (!result.solvable) {
         showNote(result.reason === 'limit'
           ? 'This position is too complex for a hint.'
-          : 'No way to finish from here. Undo or restart.');
+          : 'No way to finish from here. Restart to try again.');
         return;
       }
       hintPlan = result.solution;
@@ -328,7 +319,6 @@
   });
   $('btn-levels').addEventListener('click', showLevels);
   $('btn-levels-back').addEventListener('click', () => showTitle(true));
-  $('btn-undo').addEventListener('click', undo);
   $('btn-hint').addEventListener('click', hint);
   $('btn-restart').addEventListener('click', restart);
   $('btn-exit').addEventListener('click', showLevels);
@@ -372,9 +362,6 @@
     if (dir) {
       event.preventDefault();
       move(dir);
-    } else if (key === 'z' || key === 'u' || key === 'Backspace') {
-      event.preventDefault();
-      undo();
     } else if (key === 'h') {
       hint();
     } else if (key === 'r') {

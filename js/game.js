@@ -140,8 +140,7 @@
       player: { x: level.player.x, y: level.player.y },
       facing: 'down',
       moves: 0,
-      pushes: 0,
-      history: []
+      pushes: 0
     };
   }
 
@@ -172,7 +171,6 @@
     const result = { moved: false, pushed: false };
     if (!d) return result;
 
-    const previousFacing = game.facing;
     game.facing = dir;
 
     const nx = game.player.x + d.dx;
@@ -190,29 +188,11 @@
       result.pushed = true;
     }
 
-    game.history.push({ dir, crate, facing: previousFacing });
     game.player.x = nx;
     game.player.y = ny;
     game.moves++;
     result.moved = true;
     return result;
-  }
-
-  /** Takes back the last step, including any push. Returns false if there is nothing to undo. */
-  function undo(game) {
-    const last = game.history.pop();
-    if (!last) return false;
-    const d = DIRS[last.dir];
-    if (last.crate !== -1) {
-      game.crates[last.crate].x -= d.dx;
-      game.crates[last.crate].y -= d.dy;
-      game.pushes--;
-    }
-    game.player.x -= d.dx;
-    game.player.y -= d.dy;
-    game.moves--;
-    game.facing = last.facing;
-    return true;
   }
 
   function isSolved(game) {
@@ -228,7 +208,6 @@
     isTarget,
     crateAt,
     tryMove,
-    undo,
     isSolved
   };
 
