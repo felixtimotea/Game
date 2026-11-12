@@ -43,6 +43,7 @@
   let frameId = 0;
   // Steps still to play from the last solve, while the player keeps following them.
   let hintPlan = '';
+  let hintTaps = 0; // hint taps on the current level; kept across restarts
 
   // ---------- Saved progress ----------
 
@@ -189,9 +190,10 @@
 
   // ---------- Play ----------
 
-  function startLevel(index) {
+  function startLevel(index, keepHintTaps) {
     if (index < 0 || index >= LEVELS.length || !isUnlocked(index)) return;
     closeOverlay();
+    if (!keepHintTaps || index !== levelIndex) hintTaps = 0;
     levelIndex = index;
     game = Game.createGame(LEVELS[index].rows);
     solved = false;
@@ -210,6 +212,7 @@
   function updateHud() {
     $('hud-moves').textContent = String(game.moves);
     $('hud-pushes').textContent = String(game.pushes);
+    $('hud-hints').textContent = String(hintTaps);
     $('btn-hint').disabled = solved;
   }
 
@@ -244,6 +247,8 @@
   /** Points at the next step of a shortest-push solution from the current position. */
   function hint() {
     if (!canPlay()) return;
+    hintTaps++;
+    updateHud();
     clearHint();
 
     if (!hintPlan) {
@@ -267,7 +272,7 @@
 
   function restart() {
     if (currentScreen !== 'play') return;
-    startLevel(levelIndex);
+    startLevel(levelIndex, true);
   }
 
   function levelSolved() {
@@ -301,6 +306,7 @@
     $('complete-note').textContent = note;
     $('complete-moves').textContent = String(game.moves);
     $('complete-pushes').textContent = String(game.pushes);
+    $('complete-hints').textContent = String(hintTaps);
     $('complete-best').textContent = String(best.moves);
 
     $('btn-next').hidden = isLast;
@@ -323,7 +329,7 @@
   $('btn-restart').addEventListener('click', restart);
   $('btn-exit').addEventListener('click', showLevels);
   $('btn-next').addEventListener('click', () => startLevel(levelIndex + 1));
-  $('btn-again').addEventListener('click', restart);
+  $('btn-again').addEventListener('click', () => startLevel(levelIndex));
   $('btn-complete-levels').addEventListener('click', showLevels);
 
   let helpOpener = null;
