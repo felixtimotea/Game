@@ -14,18 +14,6 @@
 
   const LEVELS = [
     {
-      name: 'First Shift',
-      rows: [
-        '#######',
-        '#.    #',
-        '#.$ $ ##',
-        '#. $   #',
-        '#.  $@ #',
-        '###  ###',
-        '  ####'
-      ]
-    },
-    {
       name: 'Crossroads',
       rows: [
         '   ###',
