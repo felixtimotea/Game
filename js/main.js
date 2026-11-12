@@ -247,8 +247,6 @@
   /** Points at the next step of a shortest-push solution from the current position. */
   function hint() {
     if (!canPlay()) return;
-    hintTaps++;
-    updateHud();
     clearHint();
 
     if (!hintPlan) {
@@ -264,6 +262,8 @@
 
     const dir = Solver.letterToDir(hintPlan[0]);
     const pushes = hintPlan[0] !== hintPlan[0].toLowerCase();
+    hintTaps++;
+    updateHud();
     renderer.setHint(dir);
     const button = document.querySelector(`.dpad-btn[data-dir="${dir}"]`);
     if (button) button.classList.add('is-hint');
@@ -369,9 +369,9 @@
       event.preventDefault();
       move(dir);
     } else if (key === 'h') {
-      hint();
+      if (!event.repeat) hint();
     } else if (key === 'r') {
-      restart();
+      if (!event.repeat) restart();
     } else if (key === 'Escape') {
       showLevels();
     }
