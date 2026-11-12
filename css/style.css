@@ -326,6 +326,11 @@ button {
 
 .hud-title {
   min-width: 0;
+  margin-right: auto;
+}
+
+.hud-restart {
+  flex: none;
 }
 
 .hud-title h2 {
@@ -531,8 +536,8 @@ button {
 
 .result {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 8px;
   margin: 18px 0 22px;
   padding: 14px 8px;
   border: 2px solid var(--line);
