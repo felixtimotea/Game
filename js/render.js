@@ -157,6 +157,29 @@
   }
 
   /** Sizes a canvas for sharp drawing on high-density screens; returns a context scaled to CSS pixels. */
+  /** Draws the hint: an arrow on the edge of the robot's tile, pointing at the next step. */
+  function drawHintArrow(ctx, ox, oy, tile, dir, pulse) {
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+    if (!d) return;
+    const reach = tile * (0.5 + 0.06 * pulse);
+    const size = tile * 0.24;
+    ctx.save();
+    ctx.translate(ox + tile / 2 + d[0] * reach, oy + tile / 2 + d[1] * reach);
+    ctx.rotate(Math.atan2(d[1], d[0]));
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(-size * 0.7, -size);
+    ctx.lineTo(-size * 0.7, size);
+    ctx.closePath();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, tile / 12);
+    ctx.strokeStyle = COLORS.visor;
+    ctx.stroke();
+    ctx.fillStyle = COLORS.eye;
+    ctx.fill();
+    ctx.restore();
+  }
+
   function prepare(canvas, cssWidth, cssHeight) {
     const dpr = Math.max(1, root.devicePixelRatio || 1);
     canvas.width = Math.round(cssWidth * dpr);
@@ -179,6 +202,7 @@
     let lastTime = 0;
     let playerPos = { x: 0, y: 0 };
     let cratePos = [];
+    let hintDir = null;
 
     /** Jumps the animated positions straight to the game state (new level, restart). */
     function snap() {
@@ -187,8 +211,14 @@
       cratePos = game.crates.map((c) => ({ x: c.x, y: c.y }));
     }
 
+    /** Shows an arrow for the next step ('up', 'down', 'left', 'right'), or hides it with null. */
+    function setHint(dir) {
+      hintDir = dir || null;
+    }
+
     function setGame(next) {
       game = next;
+      hintDir = null;
       snap();
       resize();
     }
@@ -258,9 +288,12 @@
         drawCrate(ctx, originX + p.x * tile, originY + p.y * tile, tile, game.targets[cell]);
       }
       drawRobot(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, game.facing);
+      if (hintDir) {
+        drawHintArrow(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, hintDir, glow);
+      }
     }
 
-    return { setGame, snap, resize, draw };
+    return { setGame, setHint, snap, resize, draw };
   }
 
   /** Draws the title-screen picture: the robot, a crate and a target in a row. */
