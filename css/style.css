@@ -1,4 +1,8 @@
-/* Crate Shift: styles. One dark "night shift" theme; the game art uses the same palette. */
+/*
+ * Crate Shift: styles. Two looks, picked from the title menu: the dark "night shift"
+ * warehouse (the default) and a warm pizza style set by data-theme="pizza" on <html>.
+ * The game art in js/ uses matching palettes.
+ */
 
 :root {
   --bg: #0e1420;
@@ -14,10 +18,42 @@
   --good: #7dffb0;
   --good-deep: #2f8a4d;
   --focus: #6fe3ff;
+  --line-hover: #415377;
+  --amber-hover: #ffd187;
   --radius: 12px;
   --gutter: 16px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+}
+
+/* Pizza: a wooden table, crust-gold buttons and basil green for success. */
+:root[data-theme="pizza"] {
+  --bg: #24130b;
+  --bg-glow: #4a2614;
+  --raised: #3a2116;
+  --raised-hover: #4a2b1d;
+  --line: #6e4128;
+  --line-hover: #93603e;
+  --text: #fff4e2;
+  --text-dim: #d8b99a;
+  --amber: #f1c587;
+  --amber-deep: #ab6a33;
+  --amber-ink: #3a1d08;
+  --amber-hover: #ffd9a3;
+  --good: #8fe07a;
+  --good-deep: #3f9b3a;
+  --focus: #ffe08a;
+}
+
+:root[data-theme="pizza"] body {
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 3px, transparent 3px 46px),
+    radial-gradient(120% 80% at 50% 0%, var(--bg-glow) 0%, var(--bg) 65%) fixed var(--bg);
+}
+
+:root[data-theme="pizza"] .game-title {
+  color: var(--amber);
+  text-shadow: 0 4px 0 #b3261a;
 }
 
 *,
@@ -102,7 +138,7 @@ button {
 
 .btn:hover {
   background: var(--raised-hover);
-  border-color: #415377;
+  border-color: var(--line-hover);
 }
 
 .btn:active {
@@ -130,7 +166,7 @@ button {
 }
 
 .btn-primary:hover {
-  background: #ffd187;
+  background: var(--amber-hover);
   border-color: var(--amber-deep);
 }
 
@@ -319,27 +355,83 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   width: min(100%, 720px);
   margin: 0 auto;
 }
 
-.hud-title {
+.hud-heading {
   min-width: 0;
   margin-right: auto;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
-.hud-restart {
-  flex: none;
+/* The level title doubles as the way back to level select. */
+.hud-title {
+  display: block;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0 0 0 -8px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s;
 }
 
-.hud-title h2 {
+.hud-title:hover {
+  background: var(--raised);
+}
+
+.hud-title:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.hud-level {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-display);
   font-size: 1.125rem;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--amber);
+}
+
+.hud-level svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.hud-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.hud-actions .btn {
+  padding: 6px 12px;
+}
+
+.hint-count {
+  min-width: 20px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--line);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .hud-name {
@@ -353,7 +445,7 @@ button {
 
 .hud-stats {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex: none;
   text-align: right;
 }
@@ -410,19 +502,10 @@ button {
 }
 
 .controls {
-  display: flex;
-  align-items: center;
+  display: none;
   justify-content: center;
-  gap: 16px;
   width: min(100%, 720px);
   margin: 0 auto;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
 }
 
 .dpad {
@@ -478,15 +561,39 @@ button {
 .dpad-right::before { transform: rotate(90deg); }
 .dpad-down::before { transform: rotate(180deg); }
 
-/* Touch screens get the direction pad, with the action buttons stacked beside it. */
-@media (pointer: coarse) {
-  .controls {
-    justify-content: space-between;
+/* Narrow screens: the title and buttons share the top row, the counters sit below. */
+@media (max-width: 480px) {
+  .hud {
+    flex-wrap: wrap;
+    row-gap: 4px;
   }
 
-  .actions {
-    flex-direction: column;
-    align-items: stretch;
+  .hud-heading {
+    flex: 1 1 0;
+  }
+
+  .hud-stats {
+    order: 3;
+    flex: 1 0 100%;
+    gap: 20px;
+    text-align: left;
+  }
+
+  .hud-stats div {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .hud-stats dd {
+    font-size: 1rem;
+  }
+}
+
+/* Touch screens get the direction pad, centred under the board. */
+@media (pointer: coarse) {
+  .controls {
+    display: flex;
   }
 
   .dpad {
