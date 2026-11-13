@@ -13,6 +13,7 @@
   const Render = window.CrateRender;
   const Solver = window.CrateSolver;
   const STORAGE_KEY = 'crate-shift-progress-v1';
+  const STYLE_KEY = 'crate-shift-style-v1';
   const SWIPE_DISTANCE = 24;
   const HOLD_DELAY = 320;
   const HOLD_REPEAT = 110;
@@ -29,10 +30,38 @@
     w: 'up', s: 'down', a: 'left', d: 'right'
   };
 
+  // Each style changes the board art, the page colours and the wording.
+  const STYLES = {
+    warehouse: {
+      label: 'Warehouse',
+      themeColor: '#0e1420',
+      text: {
+        title: 'Crate Shift',
+        tagline: 'Push every crate onto a marker.',
+        helpIntro: 'Drive the robot around the warehouse and push every crate onto a glowing marker. A crate turns green when it is in place.',
+        helpPush: 'You can push one crate at a time, and only push: never pull.',
+        helpStuck: 'A crate stuck in a corner stays there, so plan ahead. Restart if you get stuck.'
+      }
+    },
+    pizza: {
+      label: 'Pizza',
+      themeColor: '#2a160d',
+      text: {
+        title: 'Pepperoni Push',
+        tagline: 'Push every pepperoni onto a golden spot.',
+        helpIntro: 'Walk the chef around the pizza and push every slice of pepperoni onto a golden spot. A pepperoni crisps up when it is in place.',
+        helpPush: 'You can push one pepperoni at a time, and only push: never pull.',
+        helpStuck: 'A pepperoni stuck against the crust in a corner stays there, so plan ahead. Restart if you get stuck.'
+      }
+    }
+  };
+  const STYLE_ORDER = Object.keys(STYLES);
+
   const $ = (id) => document.getElementById(id);
   const screens = { title: $('screen-title'), levels: $('screen-levels'), play: $('screen-play') };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const renderer = Render.createRenderer($('board'), { reducedMotion });
+  let styleName = loadStyle();
 
   let currentScreen = 'title';
   let openOverlay = null;
@@ -84,6 +113,45 @@
       if (!isComplete(i)) return i;
     }
     return -1;
+  }
+
+  // ---------- Style ----------
+
+  function loadStyle() {
+    try {
+      const saved = localStorage.getItem(STYLE_KEY);
+      if (saved && STYLES[saved]) return saved;
+    } catch (err) {
+      // Storage is blocked: use the default style.
+    }
+    return STYLE_ORDER[0];
+  }
+
+  function applyStyle(name) {
+    styleName = STYLES[name] ? name : STYLE_ORDER[0];
+    const style = STYLES[styleName];
+    document.documentElement.dataset.theme = styleName;
+    document.querySelectorAll('[data-text]').forEach((el) => {
+      const text = style.text[el.dataset.text];
+      if (text) el.textContent = text;
+    });
+    document.title = style.text.title;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = style.themeColor;
+    $('btn-style').textContent = `Style: ${style.label}`;
+    renderer.setTheme(styleName);
+    Render.drawLogo($('logo'), styleName);
+  }
+
+  function nextStyle() {
+    const next = STYLE_ORDER[(STYLE_ORDER.indexOf(styleName) + 1) % STYLE_ORDER.length];
+    applyStyle(next);
+    try {
+      localStorage.setItem(STYLE_KEY, next);
+    } catch (err) {
+      // Not saved; the choice lasts until the page closes.
+    }
+    $('announcer').textContent = `Style changed to ${STYLES[next].label}.`;
   }
 
   // ---------- Screens ----------
@@ -324,6 +392,7 @@
     else startLevel(next);
   });
   $('btn-levels').addEventListener('click', showLevels);
+  $('btn-style').addEventListener('click', nextStyle);
   $('btn-levels-back').addEventListener('click', () => showTitle(true));
   $('btn-hint').addEventListener('click', hint);
   $('btn-restart').addEventListener('click', restart);
@@ -445,6 +514,6 @@
 
   // ---------- Start ----------
 
-  Render.drawLogo($('logo'));
+  applyStyle(styleName);
   showTitle(false);
 })();

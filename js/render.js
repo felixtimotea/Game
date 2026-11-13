@@ -47,9 +47,22 @@
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
 
-  function drawFloor(ctx, ox, oy, tile, alternate) {
+  /** Fills a disc given in 16ths of a tile, one rectangle per pixel row, clipped to the tile. */
+  function disc(ctx, ox, oy, unit, cx, cy, r, color) {
+    for (let row = Math.max(0, Math.floor(cy - r)); row < Math.min(16, Math.ceil(cy + r)); row++) {
+      const dy = row + 0.5 - cy;
+      const half2 = r * r - dy * dy;
+      if (half2 <= 0) continue;
+      const half = Math.sqrt(half2);
+      const x0 = Math.max(0, Math.round(cx - half));
+      const x1 = Math.min(16, Math.round(cx + half));
+      if (x1 > x0) px(ctx, ox, oy, unit, x0, row, x1 - x0, 1, color);
+    }
+  }
+
+  function drawFloor(ctx, ox, oy, tile, gx, gy) {
     const u = tile / 16;
-    px(ctx, ox, oy, u, 0, 0, 16, 16, alternate ? COLORS.floorB : COLORS.floorA);
+    px(ctx, ox, oy, u, 0, 0, 16, 16, (gx + gy) % 2 === 1 ? COLORS.floorB : COLORS.floorA);
     px(ctx, ox, oy, u, 3, 4, 1, 1, COLORS.floorSpeck);
     px(ctx, ox, oy, u, 12, 11, 1, 1, COLORS.floorSpeck);
   }
@@ -156,9 +169,8 @@
     px(ctx, ox, oy, u, 7, 9, 2, 2, COLORS.accent);
   }
 
-  /** Sizes a canvas for sharp drawing on high-density screens; returns a context scaled to CSS pixels. */
   /** Draws the hint: an arrow on the edge of the robot's tile, pointing at the next step. */
-  function drawHintArrow(ctx, ox, oy, tile, dir, pulse) {
+  function drawHintArrow(ctx, ox, oy, tile, dir, pulse, colors) {
     const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
     if (!d) return;
     const reach = tile * (0.5 + 0.06 * pulse);
@@ -173,13 +185,14 @@
     ctx.closePath();
     ctx.lineJoin = 'round';
     ctx.lineWidth = Math.max(2, tile / 12);
-    ctx.strokeStyle = COLORS.visor;
+    ctx.strokeStyle = colors.stroke;
     ctx.stroke();
-    ctx.fillStyle = COLORS.eye;
+    ctx.fillStyle = colors.fill;
     ctx.fill();
     ctx.restore();
   }
 
+  /** Sizes a canvas for sharp drawing on high-density screens; returns a context scaled to CSS pixels. */
   function prepare(canvas, cssWidth, cssHeight) {
     const dpr = Math.max(1, root.devicePixelRatio || 1);
     canvas.width = Math.round(cssWidth * dpr);
@@ -188,6 +201,31 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
     return ctx;
+  }
+
+  /**
+   * Each style supplies the same set of tile painters. Every painter takes
+   * (ctx, ox, oy, tile, ...) with the tile's top-left corner in CSS pixels.
+   */
+  const THEMES = {
+    warehouse: {
+      floor: drawFloor,
+      wall: drawWall,
+      target: drawTarget,
+      crate: drawCrate,
+      player: drawRobot,
+      hint: { stroke: COLORS.visor, fill: COLORS.eye }
+    }
+  };
+  const DEFAULT_THEME = 'warehouse';
+
+  /** Adds a style; see THEMES for the painters it must supply. */
+  function addTheme(name, theme) {
+    THEMES[name] = theme;
+  }
+
+  function getTheme(name) {
+    return THEMES[name] || THEMES[DEFAULT_THEME];
   }
 
   function createRenderer(canvas, options) {
@@ -203,6 +241,11 @@
     let playerPos = { x: 0, y: 0 };
     let cratePos = [];
     let hintDir = null;
+    let theme = getTheme(options && options.theme);
+
+    function setTheme(name) {
+      theme = getTheme(name);
+    }
 
     /** Jumps the animated positions straight to the game state (new level, restart). */
     function snap() {
@@ -274,10 +317,10 @@
           const ox = originX + x * tile;
           const oy = originY + y * tile;
           if (game.walls[i]) {
-            drawWall(ctx, ox, oy, tile);
+            theme.wall(ctx, ox, oy, tile, x, y);
           } else if (game.floor[i]) {
-            drawFloor(ctx, ox, oy, tile, (x + y) % 2 === 1);
-            if (game.targets[i]) drawTarget(ctx, ox, oy, tile, glow);
+            theme.floor(ctx, ox, oy, tile, x, y);
+            if (game.targets[i]) theme.target(ctx, ox, oy, tile, glow);
           }
         }
       }
@@ -285,28 +328,30 @@
       for (let i = 0; i < cratePos.length; i++) {
         const p = cratePos[i];
         const cell = Math.round(p.y) * game.width + Math.round(p.x);
-        drawCrate(ctx, originX + p.x * tile, originY + p.y * tile, tile, game.targets[cell]);
+        theme.crate(ctx, originX + p.x * tile, originY + p.y * tile, tile, game.targets[cell]);
       }
-      drawRobot(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, game.facing);
+      theme.player(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, game.facing);
       if (hintDir) {
-        drawHintArrow(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, hintDir, glow);
+        drawHintArrow(ctx, originX + playerPos.x * tile, originY + playerPos.y * tile, tile, hintDir, glow, theme.hint);
       }
     }
 
-    return { setGame, setHint, snap, resize, draw };
+    return { setGame, setHint, setTheme, snap, resize, draw };
   }
 
-  /** Draws the title-screen picture: the robot, a crate and a target in a row. */
-  function drawLogo(canvas) {
+  /** Draws the title-screen picture: the player, a crate and a target in a row. */
+  function drawLogo(canvas, themeName) {
+    const t = getTheme(themeName);
     const tile = 56;
     const ctx = prepare(canvas, tile * 3, tile);
     canvas.style.width = tile * 3 + 'px';
     canvas.style.height = tile + 'px';
-    for (let x = 0; x < 3; x++) drawFloor(ctx, x * tile, 0, tile, x % 2 === 1);
-    drawRobot(ctx, 0, 0, tile, 'right');
-    drawCrate(ctx, tile, 0, tile, false);
-    drawTarget(ctx, tile * 2, 0, tile, 0.6);
+    ctx.clearRect(0, 0, tile * 3, tile);
+    for (let x = 0; x < 3; x++) t.floor(ctx, x * tile, 0, tile, x, 0);
+    t.player(ctx, 0, 0, tile, 'right');
+    t.crate(ctx, tile, 0, tile, false);
+    t.target(ctx, tile * 2, 0, tile, 0.6);
   }
 
-  root.CrateRender = { createRenderer, drawLogo };
+  root.CrateRender = { createRenderer, drawLogo, addTheme, px, disc };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

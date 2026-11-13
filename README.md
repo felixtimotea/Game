@@ -6,6 +6,8 @@ and push every crate onto a glowing marker.
 - Title menu, level select, and in-order unlocking: finishing a level opens the next.
 - Hints that show the next move, restart, move and push counters, and a saved best score per level.
 - Works with a keyboard, and on phones with swipes or the on-screen pad.
+- Two styles, switched from the title menu with **Style**: the original warehouse, and a
+  pizza where a chef pushes pepperoni onto golden spots. The choice is saved.
 - No dependencies and no build step. All artwork is drawn in code.
 
 ## Play
@@ -73,6 +75,7 @@ new levels automatically.
 | `js/levels.js` | The level list |
 | `js/game.js` | Game rules: parsing, moving, pushing, win check |
 | `js/solver.js` | Solver behind hints and the level checker |
-| `js/render.js` | Canvas drawing and slide animation |
+| `js/render.js` | Canvas drawing, slide animation and the warehouse art |
+| `js/theme-pizza.js` | The pizza style's art |
 | `js/main.js` | Screens, input and saved progress |
 | `tools/verify-levels.js` | Level validator (Node, no dependencies) |
