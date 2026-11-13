@@ -39,16 +39,21 @@
     <!-- Play -->
     <section id="screen-play" class="screen screen-play" aria-labelledby="hud-level" hidden>
       <header class="hud">
-        <div class="hud-title">
-          <h2 id="hud-level">Level 1</h2>
-          <span id="hud-name" class="hud-name"></span>
-        </div>
+        <h2 class="hud-heading">
+          <button id="btn-exit" type="button" class="hud-title" title="Level select (Esc)">
+            <span class="hud-level"><span id="hud-level">Level 1</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 6l4 4 4-4"/></svg></span>
+            <span id="hud-name" class="hud-name"></span>
+            <span class="visually-hidden">Open level select</span>
+          </button>
+        </h2>
         <dl class="hud-stats">
           <div><dt>Moves</dt><dd id="hud-moves">0</dd></div>
           <div><dt>Pushes</dt><dd id="hud-pushes">0</dd></div>
-          <div><dt>Hints</dt><dd id="hud-hints">0</dd></div>
         </dl>
-        <button id="btn-restart" type="button" class="btn btn-small hud-restart" title="Restart (R)">Restart</button>
+        <div class="hud-actions">
+          <button id="btn-hint" type="button" class="btn btn-small" title="Show the next move (H)">Hint<span id="hud-hints" class="hint-count" aria-label="hints used">0</span></button>
+          <button id="btn-restart" type="button" class="btn btn-small" title="Restart (R)">Restart</button>
+        </div>
       </header>
 
       <div id="stage" class="stage" tabindex="-1">
@@ -57,10 +62,6 @@
       </div>
 
       <footer class="controls">
-        <div class="actions">
-          <button id="btn-hint" type="button" class="btn btn-small" title="Show the next move (H)">Hint</button>
-          <button id="btn-exit" type="button" class="btn btn-small" title="Level select (Esc)">Levels</button>
-        </div>
         <div class="dpad" aria-label="Direction pad">
           <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"></button>
           <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"></button>

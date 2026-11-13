@@ -22,7 +22,7 @@ from the branch root).
 | Move | Arrow keys or W A S D | Swipe on the board, or the on-screen pad |
 | Hint | H | Hint button |
 | Restart | R | Restart button |
-| Level select | Esc | Levels button |
+| Level select | Esc | Tap the level title (top left) |
 
 Progress is stored in the browser's `localStorage`, so it stays on the device
 it was played on.

@@ -355,27 +355,83 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   width: min(100%, 720px);
   margin: 0 auto;
 }
 
-.hud-title {
+.hud-heading {
   min-width: 0;
   margin-right: auto;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
-.hud-restart {
-  flex: none;
+/* The level title doubles as the way back to level select. */
+.hud-title {
+  display: block;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0 0 0 -8px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s;
 }
 
-.hud-title h2 {
+.hud-title:hover {
+  background: var(--raised);
+}
+
+.hud-title:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.hud-level {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-display);
   font-size: 1.125rem;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--amber);
+}
+
+.hud-level svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.hud-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.hud-actions .btn {
+  padding: 6px 12px;
+}
+
+.hint-count {
+  min-width: 20px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--line);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .hud-name {
@@ -389,7 +445,7 @@ button {
 
 .hud-stats {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex: none;
   text-align: right;
 }
@@ -446,19 +502,10 @@ button {
 }
 
 .controls {
-  display: flex;
-  align-items: center;
+  display: none;
   justify-content: center;
-  gap: 16px;
   width: min(100%, 720px);
   margin: 0 auto;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
 }
 
 .dpad {
@@ -514,15 +561,39 @@ button {
 .dpad-right::before { transform: rotate(90deg); }
 .dpad-down::before { transform: rotate(180deg); }
 
-/* Touch screens get the direction pad, with the action buttons stacked beside it. */
-@media (pointer: coarse) {
-  .controls {
-    justify-content: space-between;
+/* Narrow screens: the title and buttons share the top row, the counters sit below. */
+@media (max-width: 480px) {
+  .hud {
+    flex-wrap: wrap;
+    row-gap: 4px;
   }
 
-  .actions {
-    flex-direction: column;
-    align-items: stretch;
+  .hud-heading {
+    flex: 1 1 0;
+  }
+
+  .hud-stats {
+    order: 3;
+    flex: 1 0 100%;
+    gap: 20px;
+    text-align: left;
+  }
+
+  .hud-stats div {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .hud-stats dd {
+    font-size: 1rem;
+  }
+}
+
+/* Touch screens get the direction pad, centred under the board. */
+@media (pointer: coarse) {
+  .controls {
+    display: flex;
   }
 
   .dpad {
